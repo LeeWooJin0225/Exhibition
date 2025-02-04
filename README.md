@@ -1,5 +1,5 @@
 # 🖼 전시 예매 플랫폼
-![logo3](https://github.com/user-attachments/assets/c4065157-e245-416e-aa4f-01b34a6d25b8)
+![Image](https://github.com/user-attachments/assets/593e460f-55e5-4330-9a61-48670fdf0c57)
 
 전시회 예매와 커뮤니티를 통해 소통이 가능한 플랫폼
 <br>
@@ -21,7 +21,7 @@
 <br>
 
 ## ERD 구조
-![ERD](https://github.com/user-attachments/assets/3f7fb46f-5e82-44ad-8d7d-14db135f6f7b)
+![Image](https://github.com/user-attachments/assets/f13b5b9d-26e6-4836-af60-f50dcbb6b2fb)
 <br>
 
 ## 개발 환경
@@ -77,7 +77,7 @@
   <summary>🔽 이미지 보기</summary>
   <p>
     <strong>1. 회원가입 - 이메일 인증</strong> <br>
-    <img src="https://github.com/user-attachments/assets/7f660c4e-fea4-40df-89c0-e0f260c09e69"
+    <img src="https://github.com/user-attachments/assets/7a459bd7-d9d2-40c4-801d-6e8902254dac"
          alt="image1" style="height: 400px;" />
   </p>
 </details> 
@@ -94,19 +94,19 @@
   
   <p>
     <strong>1. 자유 게시판 - 게시글 등록</strong> <br>
-    <img src="https://github.com/user-attachments/assets/ddbf6957-c6cb-42e5-a8aa-485a491e7f50"
+    <img src="https://github.com/user-attachments/assets/d04a7611-4e52-44c4-99e7-a391bed87f46"
          alt="image1" style="height: 400px;" />
   </p>
   
   <p>
     <strong>2. 자유 게시판 - 좋아요 </strong> <br>
-    <img src="https://github.com/user-attachments/assets/ed20867f-3009-46b0-b9b1-ccff41e880a1"
+    <img src="https://github.com/user-attachments/assets/58085879-b8a1-491f-b23e-058012d75430"
          alt="image2" style="height: 400px;" />
   </p>
 
   <p>
     <strong>2. 자유 게시판 - 댓글 </strong> <br>
-    <img src="https://github.com/user-attachments/assets/5ab2b5ce-d815-4c68-b8fb-76433c286b80"
+    <img src="https://github.com/user-attachments/assets/a3f6a03d-eead-4ac8-8d5d-d5d1f27ac9af"
          alt="image2" style="height: 400px;" />
   </p>
 
@@ -122,19 +122,19 @@
   <summary>🔽 이미지 보기</summary>
   <p>
     <strong>1. 티켓 구매 - 날짜 선택</strong> <br>
-    <img src="https://github.com/user-attachments/assets/ceae160f-7943-4d02-b748-fcfd0e9ec77c"
+    <img src="https://github.com/user-attachments/assets/446e3e8e-4a29-447e-a24b-824626899872"
          alt="image1" style="height: 400px;" />
   </p>
 
   <p>
     <strong>2. 티켓 구매 - 결제</strong> <br>
-    <img src="https://github.com/user-attachments/assets/63e717c6-2175-420d-b0b9-a34a824aa011"
+    <img src="https://github.com/user-attachments/assets/e6ced99c-157c-4254-9a54-3fbbb0b11b48"
          alt="image1" style="height: 400px;" />
   </p>
 
   <p>
     <strong>2. 오라클 프로시저 - 전시회 상태값 자동 변경 </strong> <br>
-    <img src="https://github.com/user-attachments/assets/4c31d6b0-4c73-450c-b653-eab488aa2527"
+    <img src="https://github.com/user-attachments/assets/bec640c3-1e3a-4997-8e22-1bd1bea870fe"
          alt="image1" style="height: 400px;" />
   </p>
 </details> 
