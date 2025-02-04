@@ -1,0 +1,19 @@
+# IDE 및 OS 관련 파일
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 빌드 파일
+target/
+build/
+node_modules/
+dist/
+
+# 환경설정 및 보안 파일
+.env
+application.properties
+application.yml
+
+# 로그 파일
+*.log
