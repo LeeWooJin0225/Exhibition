@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.CommentDao">
+
+<!--  댓글 리스트 조회 -->
+<resultMap type="com.sist.web.model.Comment" id="CommentResultMap">
+	<id column="COMM_SEQ" property="commSeq"/>
+	<result column="BRD_SEQ" property="brdSeq"/>
+	<result column="USER_ID" property="userId"/>
+	<result column="COMM_GROUP" property="commGroup"/>
+	<result column="COMM_ORDER" property="commOrder"/>
+	<result column="COMM_INDENT" property="commIndent"/>
+	<result column="COMM_PARENT" property="commParent"/>
+	<result column="REG_DATE" property="regDate"/>
+	<result column="COMM_CONTENT" property="commContent"/>
+	<result column="USER_NAME" property="userName"/>
+	<result column="STATUS" property="status"/>
+	<result column="FILE_EXT" property="fileExt"/>
+</resultMap>
+
+<!-- 댓글 등록 -->
+<insert id="commInsert" parameterType="com.sist.web.model.Comment">
+	
+	<!--  선행 처리기 (시퀀스 조회) -->
+	<selectKey resultType="long" keyProperty="commSeq" order="BEFORE">
+		SELECT SEQ_SPR_COMM_SEQ.NEXTVAL
+	  	FROM DUAL
+	</selectKey>
+
+		INSERT INTO SPR_COMMENT (
+		    COMM_SEQ,
+		    BRD_SEQ,
+		    USER_ID,
+		    COMM_GROUP,
+		    COMM_ORDER,
+		    COMM_INDENT,
+		    COMM_PARENT,
+		    REG_DATE,
+		    COMM_CONTENT,
+		    STATUS
+		) VALUES (
+		    #{commSeq},
+		    #{brdSeq},
+		    #{userId},
+		    #{commSeq},
+		    #{commOrder},
+		    #{commIndent},
+		    #{commParent},
+		    SYSDATE,
+		    #{commContent},
+		    #{status}
+		)
+</insert>
+
+<!--  댓글 조회 쿼리 -->
+<select id="commList" parameterType="long" resultMap="CommentResultMap">
+		SELECT A.COMM_SEQ,
+		       A.BRD_SEQ,
+		       A.USER_ID,
+		       NVL(COMM_GROUP, 0) COMM_GROUP,
+		       NVL(COMM_ORDER, 0) COMM_ORDER,
+		       NVL(COMM_INDENT, 0) COMM_INDENT,
+		       NVL(COMM_PARENT, 0) COMM_PARENT,
+		       NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+		       NVL(COMM_CONTENT, '') COMM_CONTENT,
+		       NVL(B.USER_NAME, '') USER_NAME,
+		       NVL(A.STATUS, '') STATUS,
+		       FILE_EXT
+		  FROM SPR_COMMENT A, SPR_USER B
+		 WHERE BRD_SEQ = #{value}
+		   AND A.USER_ID = B.USER_ID
+		   ORDER BY COMM_GROUP DESC, COMM_ORDER
+</select>
+
+<!-- COMM_GROUP의 COMM_ORDER 수정 -->
+<update id="commGroupOrderUpdate" parameterType="com.sist.web.model.Comment">
+		UPDATE SPR_COMMENT
+		   SET COMM_ORDER = COMM_ORDER + 1
+		 WHERE COMM_GROUP = #{commGroup}
+		   AND COMM_ORDER <![CDATA[>=]]> #{commOrder}
+</update>
+
+<!--  댓글 수정 -->
+<update id="commUpdate" parameterType="com.sist.web.model.Comment">
+		UPDATE SPR_COMMENT
+		   SET COMM_CONTENT = #{commContent}
+		 WHERE COMM_SEQ = #{commSeq}
+</update>
+
+<!--  댓글 삭제 / 자식이 있을 때 처리 -->
+<update id="commDelete" parameterType="long">
+		UPDATE SPR_COMMENT
+		   SET STATUS = 'N'
+		 WHERE COMM_SEQ = #{value}
+</update>
+
+<!--  댓글 삭제 / 자식이 없을 때 처리 -->
+<delete id="commRealDelete" parameterType="long">
+	DELETE FROM SPR_COMMENT
+	WHERE COMM_SEQ = #{value}
+</delete>
+
+<!--  답댓글 등록 -->
+<insert id="commReplyInsert" parameterType="com.sist.web.model.Comment">
+
+	<!--  시퀀스 등록 -->
+	<selectKey resultType="long" keyProperty="commSeq" order="BEFORE">
+			SELECT SEQ_SPR_COMM_SEQ.NEXTVAL
+	  		FROM DUAL
+	</selectKey>
+	
+			INSERT INTO SPR_COMMENT (
+			    COMM_SEQ,
+			    BRD_SEQ,
+			    USER_ID,
+			    COMM_GROUP,
+			    COMM_ORDER,
+			    COMM_INDENT,
+			    COMM_PARENT,
+			    REG_DATE,
+			    COMM_CONTENT,
+			    STATUS
+			) VALUES (
+			    #{commSeq},
+			    #{brdSeq},
+			    #{userId},
+			    #{commGroup},
+			    #{commOrder},
+			    #{commIndent},
+			    #{commParent},
+			    SYSDATE,
+			    #{commContent},
+			    #{status}
+			)
+	
+
+</insert>
+
+<!--  댓글 상세 조회 -->
+<select id="commSelect" parameterType="long" resultMap="CommentResultMap">
+		SELECT  COMM_SEQ,
+		        BRD_SEQ BRD_SEQ,
+		        A.USER_ID USER_ID,
+		        COMM_GROUP,
+		        COMM_ORDER,
+		        COMM_INDENT,
+		        COMM_PARENT,
+		        NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+		        COMM_CONTENT,
+		        B.USER_NAME USER_NAME,
+		        A.STATUS STATUS
+		 FROM SPR_COMMENT A, SPR_USER B
+		WHERE A.USER_ID = B.USER_ID
+		  AND COMM_SEQ = #{value}
+</select>
+
+<!--  댓글 개수 조회 -->
+<select id="commCount" parameterType="long" resultType="long">
+		SELECT COUNT(COMM_SEQ) CNT
+		  FROM SPR_COMMENT
+		 WHERE BRD_SEQ = #{value}
+</select>
+
+<!-- 자식 댓글 있는지 조회 -->
+<select id="commChildCount" parameterType="long" resultType="long">
+		SELECT COUNT(COMM_SEQ) CNT
+		  FROM SPR_COMMENT
+		 WHERE COMM_PARENT = #{value}
+		   AND STATUS = 'Y'
+</select>
+
+
+
+
+
+
+
+
+</mapper>

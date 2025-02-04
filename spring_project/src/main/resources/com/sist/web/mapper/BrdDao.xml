@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.BrdDao">
+
+<!-- 게시판 리스트 resultMap -->
+<resultMap type="com.sist.web.model.Brd" id="BrdResultMap">
+	<id column="BRD_SEQ" property="brdSeq"/>
+	<result column="USER_ID" property="userId"/>
+	<result column="USER_NAME" property="userName"/>
+	<result column="USER_EMAIL" property="userEmail"/>
+	<result column="BRD_GROUP" property="brdGroup"/>
+	<result column="BRD_ORDER" property="brdOrder"/>
+	<result column="BRD_INDENT" property="brdIndent"/>
+	<result column="BRD_TITLE" property="brdTitle"/>
+	<result column="BRD_CONTENT" property="brdContent"/>
+	<result column="BRD_READ_CNT" property="brdReadCnt"/>
+	<result column="REG_DATE" property="regDate"/>
+	<result column="MODI_DATE" property="modiDate"/>
+	<result column="BRD_PARENT" property="brdParent"/>
+	<result column="STATUS" property="status"/>
+	<result column="START_DATE" property="startDate"/>
+	<result column="END_DATE" property="endDate"/>
+	<result column="BOARD_TYPE" property="boardType"/>
+	<result column="CNT_COMM" property="commCount"/>
+	<result column="PRICE" property="price"/>
+</resultMap>
+
+<!--  첨부 파일 resultMap -->     
+<resultMap type="com.sist.web.model.BrdFile" id="BrdFileResultMap">
+	<id column="BRD_SEQ" property="brdSeq"/>
+	<id column="FILE_SEQ" property="fileSeq"/>
+	<result column="FILE_NAME" property="fileName"/>
+	<result column="FILE_ORG_NAME" property="fileOrgName"/>
+	<result column="FILE_EXT" property="fileExt"/>
+	<result column="FILE_SIZE" property="fileSize"/>
+	<result column="REG_DATE" property="regDate"/>
+</resultMap>
+
+<!--  게시판 리스트 조회 -->
+<select id="brdList" parameterType="com.sist.web.model.Brd" resultMap="BrdResultMap">
+		SELECT  BRD_SEQ,
+		        USER_ID,
+		        USER_NAME,
+		        USER_EMAIL,
+		        BRD_GROUP,
+		        BRD_ORDER,
+		        BRD_INDENT,
+		        BRD_TITLE,
+		        BRD_CONTENT,
+		        BRD_READ_CNT,
+		        REG_DATE,
+		        MODI_DATE,
+		        BRD_PARENT,
+		        STATUS,
+		        START_DATE,
+		        END_DATE,
+		        BOARD_TYPE,
+		        CNT_COMM,
+		        PRICE
+		        
+		FROM (SELECT 	ROWNUM RNUM,
+		                BRD_SEQ,
+		                USER_ID,
+		                USER_NAME,
+		                USER_EMAIL,
+		                BRD_GROUP,
+		                BRD_ORDER,
+		                BRD_INDENT,
+		                BRD_TITLE,
+		                BRD_CONTENT,
+		                BRD_READ_CNT,
+		                REG_DATE,
+		                MODI_DATE,
+		                BRD_PARENT,
+		                STATUS,
+		                START_DATE,
+		                END_DATE,
+		                BOARD_TYPE,
+		                CNT_COMM,
+		                PRICE
+			       FROM (SELECT  BRD_SEQ,
+		                         B.USER_ID,
+		                         USER_NAME,
+		                         USER_EMAIL,
+		                         BRD_GROUP,
+		                         BRD_ORDER,
+		                         BRD_INDENT,
+		                         BRD_TITLE,
+		                         BRD_CONTENT,
+		                         BRD_READ_CNT,
+		                         NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+		                         NVL(TO_CHAR(MODI_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') MODI_DATE,
+		                         BRD_PARENT,
+		                         A.STATUS,
+		                         NVL(TO_CHAR(START_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') START_DATE,
+		                         NVL(TO_CHAR(END_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') END_DATE,
+		                         BOARD_TYPE,
+		                         NVL((SELECT COUNT(COMM_SEQ)
+		                               FROM SPR_COMMENT C
+		                             WHERE A.BRD_SEQ = C.BRD_SEQ), 0) CNT_COMM,
+		                         PRICE
+		                  FROM   SPR_BRD A, SPR_USER B
+		                 WHERE   A.USER_ID = B.USER_ID
+		         
+		   <if test='boardType != null and boardType == "1"'>
+		   		   AND  BOARD_TYPE = 1
+		   </if>
+		   <if test='boardType != null and boardType == "2"'>
+		   		   AND  BOARD_TYPE = 2
+		   </if>          
+		    <if test='boardType != null and boardType == "3"'>
+		   		   AND  BOARD_TYPE = 3
+		   		   AND  (A.STATUS <![CDATA[<>]]> 'D'
+		   		    OR  A.STATUS IS NULL)
+		   </if>    
+		    <if test='boardType != null and boardType == "4"'>
+		   		   AND  BOARD_TYPE = 4
+		   </if> 
+
+	       <if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+	       		<choose>
+	       			<when test='searchType == "1"'>
+	                  AND B.USER_NAME LIKE '%' || #{searchValue} || '%'
+	                </when>
+	                  
+	                <when test='searchType == "2"'>
+	                  AND A.BRD_TITLE LIKE '%' || #{searchValue} || '%'
+	                </when>
+	                
+	                <when test='searchType == "3"'>
+	                  AND DBMS_LOB.INSTR(A.BRD_CONTENT, #{searchValue}) > 0
+	                 </when>
+	            </choose>
+	       </if>      
+		           
+		        ORDER BY 
+		        
+		   <if test='boardType != null and boardType == "1"'>
+		        DECODE(STATUS, 'I', 1), 
+		   </if>
+		   
+		   <if test='boardType != null and boardType == "3"'>
+				    CASE STATUS
+				    WHEN 'O' THEN 1 
+				    WHEN 'C' THEN 2 
+				    WHEN 'D' THEN 3 
+				    END,
+		   </if>
+		        
+		        BRD_GROUP DESC, BRD_ORDER))
+		        
+	WHERE RNUM <![CDATA[>=]]> #{startRow}
+	  AND RNUM <![CDATA[<=]]> #{endRow}
+
+</select>
+
+<!--  게시판 글 수 조회 -->
+<select id="brdListCount" parameterType="com.sist.web.model.Brd" resultType="long">
+		SELECT COUNT(BRD_SEQ)
+		  FROM SPR_BRD A, SPR_USER B
+		 WHERE A.USER_ID = B.USER_ID
+		 
+			<if test='boardType != null and boardType == "1"'>
+		   		   AND  BOARD_TYPE = 1
+		   </if>
+		   <if test='boardType != null and boardType == "2"'>
+		   		   AND  BOARD_TYPE = 2
+		   </if>          
+		    <if test='boardType != null and boardType == "3"'>
+		   		   AND  BOARD_TYPE = 3
+		   		   AND  (A.STATUS <![CDATA[<>]]> 'D'
+		   		    OR  A.STATUS IS NULL)
+		   </if>    
+		    <if test='boardType != null and boardType == "4"'>
+		   		   AND  BOARD_TYPE = 4
+		   </if> 
+		 
+	<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+	    <choose>
+	        <when test='searchType == "1"'>   
+	   AND B.USER_NAME LIKE '%' || #{searchValue} || '%'
+	        </when>
+	        <when test='searchType == "2"'>  
+	   AND A.BRD_TITLE LIKE '%' || #{searchValue} || '%'
+	        </when>
+	        <when test='searchType == "3"'>   
+	   AND DBMS_LOB.INSTR(A.BRD_CONTENT, #{searchValue}) > 0
+	        </when>
+	    </choose>
+	</if> 
+		   
+</select>
+
+
+<!--  게시글 등록 쿼리 -->
+<insert id="brdInsert" parameterType="com.sist.web.model.Brd">
+
+	<!-- 선행 처리기 (시퀀스 조회 -->
+	<selectKey resultType="long" keyProperty="brdSeq" order="BEFORE">
+		SELECT SEQ_BRD_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+	
+		INSERT INTO SPR_BRD (
+		    BRD_SEQ,
+		    USER_ID,
+		    BRD_GROUP,
+		    BRD_ORDER,
+		    BRD_INDENT,
+		    BRD_TITLE,
+		    BRD_CONTENT,
+		    BRD_READ_CNT,
+		    REG_DATE,
+		    MODI_DATE,
+		    BRD_PARENT,
+		    STATUS,
+		    START_DATE,
+		    END_DATE,
+		    BOARD_TYPE,
+		    PRICE
+			) VALUES (
+			    #{brdSeq},
+			    #{userId},
+			    #{brdSeq},
+			    #{brdOrder},
+			    #{brdIndent},
+			    #{brdTitle},
+			    #{brdContent},
+			    0,
+			    SYSDATE,
+			    SYSDATE,
+			    #{brdParent},
+			    #{status},
+			    TO_DATE('${startDate}', 'YYYY-MM-DD HH24:MI:SS'),
+       			TO_DATE('${endDate}', 'YYYY-MM-DD HH24:MI:SS'),
+			    #{boardType},
+			    #{price}
+			)
+
+</insert>
+
+<!-- 첨부파일 등록 쿼리 -->
+<insert id="brdFileInsert" parameterType="com.sist.web.model.BrdFile">
+	
+	INSERT INTO SPR_BRD_FILE (
+		    BRD_SEQ,
+		    FILE_SEQ,
+		    FILE_ORG_NAME,
+		    FILE_NAME,
+		    FILE_EXT,
+		    FILE_SIZE,
+		    REG_DATE
+		) VALUES (
+		    #{brdSeq},
+		    #{fileSeq},
+		    #{fileOrgName},
+		    #{fileName},
+		    #{fileExt},
+		    #{fileSize},
+		    SYSDATE
+		)
+	
+</insert>
+
+
+<!--  게시글 상세 조회 -->
+<select id="brdSelect" parameterType="long" resultMap="BrdResultMap">
+		SELECT  BRD_SEQ,
+		        B.USER_ID,
+		        USER_NAME,
+		        USER_EMAIL,
+		        BRD_GROUP,
+		        BRD_ORDER,
+		        BRD_INDENT,
+		        BRD_TITLE,
+		        BRD_CONTENT,
+		        BRD_READ_CNT,
+		        A.REG_DATE,
+		        NVL(TO_CHAR(MODI_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') MODI_DATE,
+		        BRD_PARENT,
+		        A.STATUS,
+		        NVL(TO_CHAR(START_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') START_DATE,
+		        NVL(TO_CHAR(END_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') END_DATE,
+		        BOARD_TYPE,
+		        NVL(PRICE, 0) PRICE
+		  FROM  SPR_BRD A, SPR_USER B
+		 WHERE  A.USER_ID = B.USER_ID
+		   AND  BRD_SEQ = #{value}
+</select>
+
+<!-- 첨부파일 조회 -->
+<select id="brdFileSelect" parameterType="long" resultMap="BrdFileResultMap">
+		SELECT  BRD_SEQ,
+		        FILE_SEQ,
+		        NVL(FILE_ORG_NAME, '') FILE_ORG_NAME,
+		        NVL(FILE_NAME, '') FILE_NAME,
+		        NVL(FILE_EXT, '') FILE_EXT,
+		        NVL(FILE_SIZE, 0) FILE_SIZE,
+		        NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE
+		 FROM 	SPR_BRD_FILE
+		WHERE	BRD_SEQ = #{value}
+		  AND 	FILE_SEQ = 1
+</select>
+
+<!--  게시글 조회수 증가 -->
+<update id="brdReadCntPlus" parameterType="long">
+		UPDATE SPR_BRD
+		   SET BRD_READ_CNT = BRD_READ_CNT + 1
+		 WHERE BRD_SEQ = #{value}
+</update>
+
+<!--  게시글 삭제 -->
+<update id="brdDelete" parameterType="long">
+		DELETE FROM SPR_BRD
+		 WHERE BRD_SEQ = #{value}
+</update>
+
+
+<!--  게시글 첨부 파일 삭제 -->
+<delete id="brdFileDelete" parameterType="long">
+		DELETE FROM SPR_BRD_FILE
+		WHERE BRD_SEQ = #{value}
+</delete>
+
+
+<!-- 게시글 수정 -->
+<update id="brdUpdate" parameterType="com.sist.web.model.Brd">
+		UPDATE SPR_BRD
+		   SET BRD_TITLE = #{brdTitle},
+		   	   BRD_CONTENT = #{brdContent},
+		   	   MODI_DATE = SYSDATE
+		 WHERE BRD_SEQ = #{brdSeq}
+</update>
+
+
+<!--  답변 -->
+
+<!--  BRD_GROUP의 BRD_ORDER 수정 -->
+<update id="brdGroupOrderUpdate" parameterType="com.sist.web.model.Brd">
+		UPDATE SPR_BRD
+		   SET BRD_ORDER = BRD_ORDER + 1
+		 WHERE BRD_GROUP = #{brdGroup}
+		   AND BOARD_TYPE = #{boardType}
+		   AND BRD_ORDER >= #{brdOrder}
+</update>
+
+
+<!-- 게시글 답변 등록 -->
+<insert id="brdReplyInsert" parameterType="com.sist.web.model.Brd">
+
+	<!--  시퀀스 등록 -->
+	<selectKey resultType="long" keyProperty="brdSeq" order="BEFORE"> 
+		SELECT SEQ_BRD_SEQ.NEXTVAL FROM DUAL	
+	</selectKey>
+
+	INSERT INTO SPR_BRD (
+		    BRD_SEQ,
+		    USER_ID,
+		    BRD_GROUP,
+		    BRD_ORDER,
+		    BRD_INDENT,
+		    BRD_TITLE,
+		    BRD_CONTENT,
+		    BRD_READ_CNT,
+		    REG_DATE,
+		    MODI_DATE,
+		    BRD_PARENT,
+		    STATUS,
+		    START_DATE,
+		    END_DATE,
+		    BOARD_TYPE
+		) VALUES (
+		    #{brdSeq},
+		    #{userId},
+		    #{brdGroup},
+		    #{brdOrder},
+		    #{brdIndent},
+		    #{brdTitle},
+		    #{brdContent},
+		    #{brdReadCnt},
+		    SYSDATE,
+		    #{modiDate},
+		    #{brdParent},
+		    #{status},
+		    #{startDate},
+		    #{endDate},
+		    #{boardType}
+		)
+</insert>
+
+<!--  전시회 시간에 따른 상태 업데이트 -->
+<update id="exhiStatusUpdate" parameterType="com.sist.web.model.Brd">
+		UPDATE SPR_BRD
+		   SET STATUS = #{status}
+		 WHERE BRD_SEQ = #{brdSeq}
+
+</update>
+
+
+<!-- INDEX 페이지 조회수 TOP7 조회 -->
+<select id="indexSelect" resultMap="BrdResultMap">
+		SELECT
+		    BRD_SEQ,
+		    USER_ID,
+		    BRD_TITLE,
+		    BRD_READ_CNT,
+		    STATUS,
+		    START_DATE,
+		    END_DATE,
+		    BOARD_TYPE,
+		    PRICE
+		FROM (
+				SELECT
+			        ROWNUM RNUM,
+			        BRD_SEQ,
+			        USER_ID,
+			        BRD_TITLE,
+			        BRD_READ_CNT,
+			        STATUS,
+			        START_DATE,
+			        END_DATE,
+			        BOARD_TYPE,
+			        PRICE
+			    FROM
+			        (
+			            SELECT
+				            BRD_SEQ,
+				            USER_ID,
+				            BRD_TITLE,
+				            BRD_READ_CNT,
+				            STATUS,
+				            TO_CHAR(START_DATE, 'YYYY.MM.DD') START_DATE,
+				            TO_CHAR(END_DATE, 'YYYY.MM.DD') END_DATE,
+				            BOARD_TYPE,
+				            PRICE
+				        FROM
+				            SPR_BRD
+				        WHERE 
+				            BOARD_TYPE = 3
+				        AND
+				        	STATUS = 'O'
+				        ORDER BY
+				            BRD_READ_CNT DESC
+				     ))
+		WHERE
+		    RNUM <![CDATA[>=]]> 1
+		AND
+		    RNUM <![CDATA[<=]]> 6
+</select>
+
+
+
+
+
+
+</mapper>
