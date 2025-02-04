@@ -149,13 +149,13 @@
   <summary>🔽 이미지 보기</summary>
   <p>
     <strong>1. 공지사항 게시판 - 글 작성</strong> <br>
-    <img src="https://github.com/user-attachments/assets/441e64be-2c8c-4673-82e6-74e2f848b057"
+    <img src="https://github.com/user-attachments/assets/6c4a7898-afa7-4869-bd36-057e8e9298f3"
          alt="image1" style="height: 400px;" />
   </p>
 
   <p>
     <strong>2. QnA 게시판 - 답글 작성</strong> <br>
-    <img src="https://github.com/user-attachments/assets/56061232-915b-447d-8c6e-12c36e0d0b3e"
+    <img src="https://github.com/user-attachments/assets/8143ee5b-ffd8-4022-86b8-275ce9aa9d89"
          alt="image1" style="height: 400px;" />
   </p>
 </details> 
